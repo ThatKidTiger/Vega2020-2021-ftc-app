@@ -1,4 +1,4 @@
-package stormbots;
+package com.stormbots;
 
 public class Main {
 
