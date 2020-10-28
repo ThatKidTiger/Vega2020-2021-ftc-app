@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.vision;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -13,12 +14,14 @@ import org.openftc.easyopencv.OpenCvTracker;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.hardware.BotConstants.CV_CONSTS.CV_THRESH.*;
 import static org.firstinspires.ftc.teamcode.hardware.BotConstants.CV_CONSTS.blur;
 import static org.firstinspires.ftc.teamcode.hardware.BotConstants.CV_CONSTS.sigX;
 import static org.firstinspires.ftc.teamcode.hardware.BotConstants.CV_CONSTS.threshold;
 
 public class stoneIdentifier extends OpenCvTracker {
     Scalar color;
+    Mat kernel = Mat.ones(3,3, CvType.CV_32F);
 
     public stoneIdentifier(Scalar color) {
         this.color = color;
@@ -28,23 +31,22 @@ public class stoneIdentifier extends OpenCvTracker {
     public Mat processFrame(Mat input) {
         Mat hsv = new Mat();
         Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
-        //input.release();
 
         Mat average = new Mat();
         Imgproc.GaussianBlur(hsv, average, new Size(blur, blur), sigX);
         hsv.release();
 
-        Mat dilate = new Mat();
-        Imgproc.dilate(average, dilate, new Mat());
+        Mat thresh = new Mat();
+        Core.inRange(average, new Scalar(LOH, LOS, LOV), new Scalar(UPH, UPS, UPV), thresh);
         average.release();
 
-        Mat thresh = new Mat();
-        Core.inRange(dilate, new Scalar(20, 90, 210), new Scalar(30, 255, 255), thresh);
-        dilate.release();
+        Mat close = new Mat();
+        Imgproc.morphologyEx(thresh, close, Imgproc.MORPH_CLOSE, kernel);
+        thresh.release();
 
         Mat cannyOutput = new Mat();
-        Imgproc.Canny(thresh, cannyOutput, threshold, threshold * 3);
-        thresh.release();
+        Imgproc.Canny(close, cannyOutput, threshold, threshold * 3);
+        close.release();
 
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();

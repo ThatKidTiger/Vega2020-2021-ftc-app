@@ -41,7 +41,7 @@ public class Robot {
     public static final String TAG = "Robot";
     ElapsedTime runtime = new ElapsedTime();
 
-    ArrayList<Subsystem> subsystems = new ArrayList();
+    ArrayList<Subsystem> subsystems = new ArrayList<Subsystem>();
     private IMU imu = new IMU();
     private MecanumDrive drive = new MecanumDrive();
     private Latch latch = new Latch();
