@@ -2,14 +2,9 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.ExampleHardware;
-import org.firstinspires.ftc.teamcode.vision.ballIdentifier;
 import org.firstinspires.ftc.teamcode.vision.stoneIdentifier;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;

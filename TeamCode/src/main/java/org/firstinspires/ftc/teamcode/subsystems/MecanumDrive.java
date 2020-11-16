@@ -37,7 +37,7 @@ public class MecanumDrive extends Subsystem {
 	private HashMap<String, Object> updates = new HashMap<>();
 
 	//names to search the hardware map for
-	//private String[] motorNames = {"frontLeft", "backLeft", "backRight", "frontRight"};
+	private String[] motorNames = {"frontLeft", "backLeft", "backRight", "frontRight"};
 
 	@Override
 	public Map<String, Object> update() {
@@ -49,15 +49,9 @@ public class MecanumDrive extends Subsystem {
 	}
 
 	public void init(HardwareMap hwMap) {
-		/*for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < 4; i++) {
 			motors[i] = hwMap.get(DcMotor.class, motorNames[i]);
-		}*/
-
-		//example straightforward hardware reference retrieval
-		DcMotor frontLeft = hwMap.get(DcMotor.class, "frontLeft");
-		DcMotor backLeft = hwMap.get(DcMotor.class, "backLeft");
-		DcMotor backRight = hwMap.get(DcMotor.class, "backRight");
-		DcMotor frontRight = hwMap.get(DcMotor.class, "frontRight");
+		}
 
 		motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
 		motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
