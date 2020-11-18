@@ -69,8 +69,6 @@ public class MecanumDrive extends Subsystem {
 		updates.put("FR", powers[3]);
 	}
 
-	//todo: add max function to setMotorPowers
-
 	//return to this after understanding kinematic analysis
 	/*converting unit circle gamepad input into polar coordinates to power + direction
 	r = (sqrt(arccos(x)^2 + arcsin(y)^2), theta = arcsin(y)
