@@ -14,7 +14,7 @@ public class Robot {
 	ElapsedTime runtime = new ElapsedTime();
 
 	ArrayList<Subsystem> subsystems = new ArrayList<Subsystem>();
-	public Drivetrain drive = new Drivetrain();
+	public MecanumDrive drive = new MecanumDrive();
 
 	/* Constructor */
 	public Robot() {
