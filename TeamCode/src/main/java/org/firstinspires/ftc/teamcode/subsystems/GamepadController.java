@@ -42,6 +42,6 @@ public class GamepadController {
 			right /= max;
 		}
 
-		return new double[] {left, right, strafe};
+		return new double[] {-left, -right, -strafe};
 	}
 }

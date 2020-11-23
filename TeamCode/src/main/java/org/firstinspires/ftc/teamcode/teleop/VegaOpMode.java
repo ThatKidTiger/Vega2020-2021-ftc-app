@@ -45,6 +45,12 @@ public class VegaOpMode extends OpMode
             robot.rotateByAngle(90);
         }
 
+        if(gamepad1.b) {
+            robot.launcher.spinToVel(0.75);
+        } else {
+            robot.launcher.spinToVel(0);
+        }
+
         /*
         Todo: add remaining subsystems
          */

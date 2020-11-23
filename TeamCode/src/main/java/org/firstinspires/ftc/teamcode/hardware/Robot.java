@@ -10,6 +10,7 @@ import com.stormbots.MiniPID;
 
 import org.firstinspires.ftc.teamcode.subsystems.IMU;
 import org.firstinspires.ftc.teamcode.subsystems.HDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class Robot {
 
     ArrayList<Subsystem> subsystems = new ArrayList<Subsystem>();
     private IMU imu = new IMU();
+    public Launcher launcher = new Launcher();
     public HDrive drive = new HDrive();
 
     FtcDashboard dashboard;
@@ -43,6 +45,7 @@ public class Robot {
     public Robot() {
         subsystems.add(drive);
         subsystems.add(imu);
+        subsystems.add(launcher);
         packet = new TelemetryPacket();
         dashboard = FtcDashboard.getInstance();
     }
@@ -61,8 +64,9 @@ public class Robot {
 
     /* Initialize standard Hardware interfaces */
     public void init(HardwareMap hwMap) {
-        imu.init(hwMap);
-        drive.init(hwMap);
+        for(Subsystem subsystem : subsystems) {
+            subsystem.init(hwMap);
+        }
         runtime.startTime();
     }
 

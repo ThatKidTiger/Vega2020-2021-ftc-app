@@ -26,6 +26,7 @@ public class IMU extends Subsystem {
 
 	@Override
 	public Map<String, Object> update() {
+		updates.put("Angular Distance", getAngularDistance());
 		return updates;
 	}
 

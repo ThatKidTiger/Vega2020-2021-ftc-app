@@ -34,9 +34,9 @@ public class HDrive extends Subsystem{
 
 	//initialization, retrieves necessary hardware references and sets initial values
 	public void init(HardwareMap hwMap) {
-		right = hwMap.get(DcMotor.class, "frontLeft"); //<- the names that we are searching for
-		left = hwMap.get(DcMotor.class, "backLeft");
-		strafe = hwMap.get(DcMotor.class, "backRight");
+		right = hwMap.get(DcMotor.class, "right"); //<- the names that we are searching for
+		left = hwMap.get(DcMotor.class, "left");
+		strafe = hwMap.get(DcMotor.class, "strafe");
 
 		//make motors all spin forward at positive power
 		left.setDirection(DcMotorSimple.Direction.REVERSE);
