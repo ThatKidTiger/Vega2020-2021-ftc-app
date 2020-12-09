@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.example;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode.subsystems.GamepadController;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.subsystems.GamepadController;
 @TeleOp(name="ExampleOpMode", group="VegaBot")
 public class ExampleOpMode extends OpMode {
 	private Robot robot = new Robot();
+	private ColorSensor colSen = hardwareMap.get(ColorSensor.class, "colSen");
 
 	//what happens when you press init (before the timer starts)
 	@Override
