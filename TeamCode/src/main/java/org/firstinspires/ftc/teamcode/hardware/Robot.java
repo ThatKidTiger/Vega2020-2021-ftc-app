@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.stormbots.MiniPID;
 
 import org.firstinspires.ftc.teamcode.subsystems.IMU;
-import org.firstinspires.ftc.teamcode.subsystems.HDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
 
 import java.util.ArrayList;
@@ -33,10 +33,10 @@ public class Robot {
     public static final String TAG = "Robot";
     ElapsedTime runtime = new ElapsedTime();
 
-    ArrayList<Subsystem> subsystems = new ArrayList<Subsystem>();
+    ArrayList<Subsystem> subsystems = new ArrayList<>();
     private IMU imu = new IMU();
     private Launcher launcher = new Launcher();
-    public HDrive drive = new HDrive();
+    public MecanumDrive drive = new MecanumDrive();
 
     FtcDashboard dashboard;
     TelemetryPacket packet;

@@ -32,16 +32,22 @@ public class GamepadController {
 
 		double strafe = gamepad1.right_stick_x;
 
-		double left = drive - turn;
-		double right = drive + turn;
+		double FL = drive - turn - strafe;
+		double BL = drive - turn + strafe;
+		double FR = drive + turn + strafe;
+		double BR = drive + turn - strafe;
 
-		double max = Math.max(Math.abs(left), Math.abs(right));
+		double maxf = Math.max(Math.abs(FL), Math.abs(FR));
+		double maxb = Math.max(Math.abs(BL), Math.abs(BR));
+		double max = Math.max(maxf, maxb);
 		if (max > 1)
 		{
-			left /= max;
-			right /= max;
+			FL /= max;
+			BL /= max;
+			FR /= max;
+			BR /= max;
 		}
 
-		return new double[] {-left, -right, -strafe};
+		return new double[] {FL, BL, BR, FR};
 	}
 }
