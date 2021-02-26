@@ -23,11 +23,11 @@ public class MecanumDrive extends Subsystem {
 			Front
 			  ^
 			  |
-		0			3
+		3			1
 
 
 
-		1			2
+		0			2
 	 */
 
 	//hardware object references

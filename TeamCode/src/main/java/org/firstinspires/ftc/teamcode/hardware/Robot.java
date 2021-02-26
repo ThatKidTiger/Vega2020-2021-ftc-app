@@ -35,19 +35,19 @@ public class Robot {
 
     ArrayList<Subsystem> subsystems = new ArrayList<>();
     private IMU imu = new IMU();
-    private Launcher launcher = new Launcher();
+    //private Launcher launcher = new Launcher();
     public MecanumDrive drive = new MecanumDrive();
 
     FtcDashboard dashboard;
     TelemetryPacket packet;
 
-    private double speed = 0.9;
+    private double speed = 1;
 
     /* Constructor */
     public Robot() {
         subsystems.add(drive);
         subsystems.add(imu);
-        subsystems.add(launcher);
+        //subsystems.add(launcher);
         packet = new TelemetryPacket();
         dashboard = FtcDashboard.getInstance();
     }
@@ -145,12 +145,13 @@ public class Robot {
         speed += 0.05;
     }
 
-    public void spinUp() {
+    /*public void spinUp() {
         launcher.spinToVel(speed);
     }
 
     public void spinDown() {
         launcher.spinToVel(0);
     }
+     */
     //endregion
 }

@@ -36,7 +36,6 @@ public class VegaOpMode extends OpMode
         robot.init(hardwareMap);
 
         controllers = new GamepadController(gamepad1, gamepad2);
-        dist = hardwareMap.get(DistanceSensor.class, "dist");
     }
 
     @Override
@@ -47,6 +46,7 @@ public class VegaOpMode extends OpMode
     //Todo: figure out how to consolidate telemetry packets for dashboard updates per-loop, probably by returning a mega packet from the robot class.
     @Override
     public void loop() {
+        robot.update();
         runtime.reset();
 
         robot.drive.setMotorPowers(controllers.getDrivePowers());
@@ -55,7 +55,7 @@ public class VegaOpMode extends OpMode
             robot.rotateByAngle(90);
         }
 
-        if(gamepad1.b && !bPressed) {
+        /*if(gamepad1.b && !bPressed) {
             bPressed = true;
 
             if(spinning) {
@@ -67,8 +67,13 @@ public class VegaOpMode extends OpMode
             spinning = !spinning;
         }
 
-        bPressed = gamepad1.b;
+        bPressed = gamepad1.b;*/
 
+        /*if(gamepad1.b) {
+            robot.spinUp();
+        }*/
+
+        //make spin up toggle and rising edge for speed adjustment
         if(gamepad1.dpad_down) {
             robot.decreaseLaunchSpeed();
         } else if(gamepad1.dpad_up) {
@@ -79,15 +84,12 @@ public class VegaOpMode extends OpMode
         Todo: add remaining subsystems
          */
 
-        packet.put("Time: ", runtime.milliseconds());
+        //packet.put("Time: ", runtime.milliseconds());
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
-        //packet.put("Distance(cm): ", robot.distance.getDistance(DistanceUnit.CM));
-        //packet.put("Top Distance(cm): ", robot.topdistance.getDistance(DistanceUnit.CM));
         //packet.put("Angle: ", getOrientation());
-        telemetry.addData("Distance: ", "%f", dist.getDistance(DistanceUnit.CM));
         //telemetry.addData("Left R,G,B,A: ", "%d %d %d %d", colSen.red(), colSen.green(), colSen.blue(), colSen.alpha());
-        dashboard.sendTelemetryPacket(packet);
+        //dashboard.sendTelemetryPacket(packet);
     }
 
     @Override

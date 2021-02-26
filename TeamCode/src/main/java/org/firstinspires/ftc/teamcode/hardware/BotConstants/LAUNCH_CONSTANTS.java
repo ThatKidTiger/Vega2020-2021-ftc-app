@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 @Config
 public class LAUNCH_CONSTANTS {
-    public static double speed = 0.9;
+    public static double P = 1.82;
+    public static double I = .182;
+    public static double D = 0;
+    public static double F = 18.2   ;
     
 }
