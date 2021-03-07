@@ -13,6 +13,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.GamepadController;
 
+import java.util.Map;
+
 @TeleOp(name="VegaOpMode", group="VegaBot")
 public class VegaOpMode extends OpMode
 {
@@ -46,7 +48,8 @@ public class VegaOpMode extends OpMode
     //Todo: figure out how to consolidate telemetry packets for dashboard updates per-loop, probably by returning a mega packet from the robot class.
     @Override
     public void loop() {
-        robot.update();
+        Map<String, Object> updatePacket = robot.update();
+
         runtime.reset();
 
         robot.drive.setMotorPowers(controllers.getDrivePowers());
@@ -69,9 +72,9 @@ public class VegaOpMode extends OpMode
 
         bPressed = gamepad1.b;*/
 
-        /*if(gamepad1.b) {
+        if(gamepad1.b) {
             robot.spinUp();
-        }*/
+        }
 
         //make spin up toggle and rising edge for speed adjustment
         if(gamepad1.dpad_down) {
@@ -84,12 +87,11 @@ public class VegaOpMode extends OpMode
         Todo: add remaining subsystems
          */
 
-        //packet.put("Time: ", runtime.milliseconds());
+        updatePacket.put("Time: ", runtime.milliseconds());
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
-        //packet.put("Angle: ", getOrientation());
-        //telemetry.addData("Left R,G,B,A: ", "%d %d %d %d", colSen.red(), colSen.green(), colSen.blue(), colSen.alpha());
-        //dashboard.sendTelemetryPacket(packet);
+        packet.putAll(updatePacket);
+        dashboard.sendTelemetryPacket(packet);
     }
 
     @Override

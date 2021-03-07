@@ -29,13 +29,13 @@ Todo: Run all systems as state machines, with update commands as transition stat
 Todo: pass the dashboard object reference to robot, and then retrieve the various subsystem updates
  */
 
-public class Robot {
+public class Robot extends Subsystem{
     public static final String TAG = "Robot";
     ElapsedTime runtime = new ElapsedTime();
 
     ArrayList<Subsystem> subsystems = new ArrayList<>();
     private IMU imu = new IMU();
-    //private Launcher launcher = new Launcher();
+    private Launcher launcher = new Launcher();
     public MecanumDrive drive = new MecanumDrive();
 
     FtcDashboard dashboard;
@@ -47,12 +47,12 @@ public class Robot {
     public Robot() {
         subsystems.add(drive);
         subsystems.add(imu);
-        //subsystems.add(launcher);
+        subsystems.add(launcher);
         packet = new TelemetryPacket();
         dashboard = FtcDashboard.getInstance();
     }
 
-    public void update() {
+    public Map<String, Object> update() {
         Map<String, Object> updates = new HashMap<>();
         for(Subsystem subsystem : subsystems) {
             Map<String, Object> updatePacket = subsystem.update();
@@ -60,8 +60,8 @@ public class Robot {
                 updates.putAll(updatePacket);
             }
         }
-        packet.putAll(updates);
-        dashboard.sendTelemetryPacket(packet);
+
+        return updates;
     }
 
     /* Initialize standard Hardware interfaces */
@@ -75,19 +75,19 @@ public class Robot {
     //region Auton methods
     public void forward(double power) {
         Log.d(TAG, String.format("Moving " + (power > 0 ? "forward" : "backward") + " at power %f.2", Math.abs(power)));
-        double[] powers = {power, power, 0};
+        double[] powers = {power, power, power, power};
         drive.setMotorPowers(powers);
     }
 
     public void strafe(double power) {
         Log.d(TAG, String.format("Strafing " + (power > 0 ? "right" : "left") + " at power %f.2", Math.abs(power)));
-        double[] powers = {0, 0, power};
+        double[] powers = {power, -power, power, -power};
         drive.setMotorPowers(powers);
     }
 
     public void rotateByPower(double power) {
         Log.d(TAG, String.format("Rotating " + (power < 0 ? "counterclockwise" : "clockwise") + " at power %f.2", Math.abs(power)));
-        double[] powers = {power, -power, 0};
+        double[] powers = {power, power, -power, -power};
         drive.setMotorPowers(powers);
     }
 
@@ -125,7 +125,7 @@ public class Robot {
             leftPower = -temppower;
             rightPower = temppower;
 
-            double[] powers = {leftPower, rightPower, 0};
+            double[] powers = {leftPower, leftPower, rightPower, rightPower};
             drive.setMotorPowers(powers);
         }
         stop();
@@ -145,13 +145,13 @@ public class Robot {
         speed += 0.05;
     }
 
-    /*public void spinUp() {
+    public void spinUp() {
         launcher.spinToVel(speed);
     }
 
     public void spinDown() {
         launcher.spinToVel(0);
     }
-     */
+
     //endregion
 }

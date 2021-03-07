@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+	package org.firstinspires.ftc.teamcode.subsystems;
 
 import android.util.Log;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -31,16 +32,19 @@ public class MecanumDrive extends Subsystem {
 	 */
 
 	//hardware object references
-	private DcMotor[] motors = new DcMotor[4];
+	private DcMotorEx[] motors = new DcMotorEx[4];
 
 	//map to update telemetry stats to
 	private HashMap<String, Object> updates = new HashMap<>();
 
 	//names to search the hardware map for
-	private String[] motorNames = {"frontLeft", "backLeft", "backRight", "frontRight"};
+	private String[] motorNames = {"launcher", "backLeft", "backRight", "frontRight"};
 
 	@Override
 	public Map<String, Object> update() {
+		for(int i = 0; i < motors.length; i++) {
+			updates.put(motorNames[i], motors[i].getVelocity());
+		}
 		return updates;
 	}
 
@@ -51,7 +55,7 @@ public class MecanumDrive extends Subsystem {
 	@Override
 	public void init(HardwareMap hwMap) {
 		for(int i = 0; i < 4; i++) {
-			motors[i] = hwMap.get(DcMotor.class, motorNames[i]);
+			motors[i] = hwMap.get(DcMotorEx.class, motorNames[i]);
 		}
 
 		motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
