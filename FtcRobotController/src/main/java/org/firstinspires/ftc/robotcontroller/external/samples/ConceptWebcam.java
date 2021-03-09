@@ -35,6 +35,7 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -105,6 +106,8 @@ public class ConceptWebcam extends LinearOpMode {
      * infrastructure are to run. In this OpMode, that's all hidden from you (but see {@link #startCamera}
      * if you're curious): no knowledge of multi-threading is needed here. */
     private Handler callbackHandler;
+
+    private FtcDashboard dash = FtcDashboard.getInstance();
 
     //----------------------------------------------------------------------------------------------
     // Main OpMode entry

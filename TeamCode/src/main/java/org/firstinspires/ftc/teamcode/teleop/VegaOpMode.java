@@ -73,7 +73,7 @@ public class VegaOpMode extends OpMode
         bPressed = gamepad1.b;*/
 
         if(gamepad1.b) {
-            robot.spinUp();
+            //robot.spinUp();
         }
 
         //make spin up toggle and rising edge for speed adjustment

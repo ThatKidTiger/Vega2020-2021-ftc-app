@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.util.Encoder;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +17,9 @@ Todo: Document
 Todo: Read mecanum kinematic analysis
 Todo: Find out why the motor powers need to be reversed
 Todo: Implement rotateToOrientation command
- */
+*/
 
+//deprecated, use roadrunner mecanum class
 public class MecanumDrive extends Subsystem {
 	private static final String TAG = "MecanumDrive";
 	/*
@@ -38,13 +41,22 @@ public class MecanumDrive extends Subsystem {
 	private HashMap<String, Object> updates = new HashMap<>();
 
 	//names to search the hardware map for
-	private String[] motorNames = {"launcher", "backLeft", "backRight", "frontRight"};
+	private String[] motorNames = {"frontLeft", "backLeft", "backRight", "frontRight"};
+
+	private Encoder leftEncoder;
+	private Encoder rightEncoder;
+	private Encoder frontEncoder;
 
 	@Override
 	public Map<String, Object> update() {
 		for(int i = 0; i < motors.length; i++) {
 			updates.put(motorNames[i], motors[i].getVelocity());
 		}
+
+		updates.put("leftEncoder", leftEncoder.getCurrentPosition());
+		updates.put("rightEncoder", rightEncoder.getCurrentPosition());
+		updates.put("frontEncoder", frontEncoder.getCurrentPosition());
+
 		return updates;
 	}
 
@@ -58,8 +70,12 @@ public class MecanumDrive extends Subsystem {
 			motors[i] = hwMap.get(DcMotorEx.class, motorNames[i]);
 		}
 
-		motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
-		motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
+		motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
+		motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
+
+		leftEncoder = new Encoder(hwMap.get(DcMotorEx.class, "backLeft"));
+		rightEncoder = new Encoder(hwMap.get(DcMotorEx.class, "frontRight"));
+		frontEncoder = new Encoder(hwMap.get(DcMotorEx.class, "backRight"));
 		Log.d(TAG, "Initialization Complete");
 	}
 

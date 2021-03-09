@@ -35,7 +35,7 @@ public class Robot extends Subsystem{
 
     ArrayList<Subsystem> subsystems = new ArrayList<>();
     private IMU imu = new IMU();
-    private Launcher launcher = new Launcher();
+    //private Launcher launcher = new Launcher();
     public MecanumDrive drive = new MecanumDrive();
 
     FtcDashboard dashboard;
@@ -47,7 +47,7 @@ public class Robot extends Subsystem{
     public Robot() {
         subsystems.add(drive);
         subsystems.add(imu);
-        subsystems.add(launcher);
+        //subsystems.add(launcher);
         packet = new TelemetryPacket();
         dashboard = FtcDashboard.getInstance();
     }
@@ -145,13 +145,13 @@ public class Robot extends Subsystem{
         speed += 0.05;
     }
 
-    public void spinUp() {
+    /*public void spinUp() {
         launcher.spinToVel(speed);
-    }
+    }*/
 
-    public void spinDown() {
+    /*public void spinDown() {
         launcher.spinToVel(0);
-    }
+    }*/
 
     //endregion
 }
