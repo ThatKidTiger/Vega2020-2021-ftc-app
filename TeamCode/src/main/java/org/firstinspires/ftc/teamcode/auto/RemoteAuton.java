@@ -226,6 +226,7 @@ public class RemoteAuton extends LinearOpMode
         Mat region1_Cb, region2_Cb;
         Mat YCrCb = new Mat();
         Mat Cb = new Mat();
+        Mat rotated = new Mat();
         int avg1, avg2;
 
         private volatile int min = 0;
@@ -233,7 +234,8 @@ public class RemoteAuton extends LinearOpMode
 
         void inputToCb(Mat input)
         {
-            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.rotate(input, rotated, Core.ROTATE_180);
+            Imgproc.cvtColor(rotated, YCrCb, Imgproc.COLOR_RGB2YCrCb);
             Core.extractChannel(YCrCb, Cb, 2);
         }
 
@@ -301,12 +303,12 @@ public class RemoteAuton extends LinearOpMode
             avg1 = (int) Core.mean(region1_Cb).val[0];
             avg2 = (int) Core.mean(region2_Cb).val[0];
 
-            //TODO: Determine the threshold values for rings at given distance +- 2 inches given field lighting conditions
-            //Log.d(TAG, "Avg 1:" + avg1);
-            //Log.d(TAG, "Avg 2:" + avg2);
+            //TODO: Determine the threshold values for rings at given distance +- 2 inches given field lighting conditions, then +- 3
+            Log.d(TAG, "Avg 1:" + avg1);
+            Log.d(TAG, "Avg 2:" + avg2);
 
             Imgproc.rectangle(
-                    input, // Buffer to draw on
+                    rotated, // Buffer to draw on
                     region1_pointA, // First point which defines the rectangle
                     region1_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
@@ -314,19 +316,20 @@ public class RemoteAuton extends LinearOpMode
 
 
             Imgproc.rectangle(
-                    input, // Buffer to draw on
+                    rotated, // Buffer to draw on
                     region2_pointA, // First point which defines the rectangle
                     region2_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
                     2); // Thickness of the rectangle lines
 
+            min = Math.min(avg1, avg2);
 
             //TODO: Set initial threshold for ring disqualification to previously established lower limit
-            if(min > 120) {
+            if(min > 125) {
                 config = CVTest.RingPipeline.RingConfig.ZERO;
                 Log.d(TAG, "0 Rings");
             }
-            else if(min < 110) // Was it from region 2?
+            else if(avg2 < 115) // Was it from region 2?
             {
                 config = CVTest.RingPipeline.RingConfig.ONE; // Record our analysis
 
@@ -335,14 +338,14 @@ public class RemoteAuton extends LinearOpMode
                  * Simply a visual aid. Serves no functional purpose.
                  */
                 Imgproc.rectangle(
-                        input, // Buffer to draw on
+                        rotated, // Buffer to draw on
                         region2_pointA, // First point which defines the rectangle
                         region2_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
                 Log.d(TAG, "4 Rings");
             }
-            else if(min < 110) // Was it from region 1?
+            else if(avg1 < 115) // Was it from region 1?
             {
                 config = CVTest.RingPipeline.RingConfig.FOUR; // Record our analysis
 
@@ -351,7 +354,7 @@ public class RemoteAuton extends LinearOpMode
                  * Simply a visual aid. Serves no functional purpose.
                  */
                 Imgproc.rectangle(
-                        input, // Buffer to draw on
+                        rotated, // Buffer to draw on
                         region1_pointA, // First point which defines the rectangle
                         region1_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
@@ -364,7 +367,7 @@ public class RemoteAuton extends LinearOpMode
              * simply rendering the raw camera feed, because we called functions
              * to add some annotations to this buffer earlier up.
              */
-            return input;
+            return rotated;
         }
 
         /*
