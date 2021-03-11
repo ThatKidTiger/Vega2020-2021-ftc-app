@@ -32,6 +32,8 @@ public class VegaOpMode extends OpMode
     private boolean bPressed = false;
     private boolean spinning = false;
 
+    private boolean ddownPressed = false;
+    private boolean dupPressed = false;
     @Override
     public void init() {
         runtime.startTime();
@@ -52,28 +54,26 @@ public class VegaOpMode extends OpMode
 
         runtime.reset();
 
-        robot.drive.setMotorPowers(controllers.getDrivePowers());
+        //robot.drive.setMotorPowers(controllers.getDrivePowers());
 
         if(gamepad1.a) {
             robot.rotateByAngle(90);
         }
 
-        /*if(gamepad1.b && !bPressed) {
-            bPressed = true;
-
-            if(spinning) {
-                robot.spinDown();
+        if(gamepad1.b) {
+            if(bPressed != true) {
+                spinning = !spinning;
             } else {
-                robot.spinUp();
+                bPressed = true;
             }
-
-            spinning = !spinning;
+        } else {
+            bPressed = false;
         }
 
-        bPressed = gamepad1.b;*/
-
-        if(gamepad1.b) {
-            //robot.spinUp();
+        if(spinning) {
+            robot.spinUp();
+        } else {
+            robot.spinDown();
         }
 
         //make spin up toggle and rising edge for speed adjustment
@@ -81,6 +81,24 @@ public class VegaOpMode extends OpMode
             robot.decreaseLaunchSpeed();
         } else if(gamepad1.dpad_up) {
             robot.increaseLaunchSpeed();
+        }
+
+        if(gamepad1.dpad_down) {
+            if(!ddownPressed) {
+                robot.decreaseLaunchSpeed();
+            }
+            ddownPressed = true;
+        } else {
+            ddownPressed = false;
+        }
+
+        if(gamepad1.dpad_up) {
+            if(!dupPressed) {
+                robot.increaseLaunchSpeed();
+            }
+            dupPressed = true;
+        } else {
+            dupPressed = false;
         }
 
         /*
