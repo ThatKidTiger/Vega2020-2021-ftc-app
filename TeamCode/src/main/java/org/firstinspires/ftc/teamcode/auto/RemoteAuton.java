@@ -74,7 +74,7 @@ public class RemoteAuton extends LinearOpMode
          * (while a streaming session is in flight) *IS* supported.
          */
         //webcam.setPipeline(new stoneIdentifier(new Scalar(Color.RED)));
-        webcam.setPipeline(new RingPipeline());
+        webcam.setPipeline(new stoneIdentifier(new Scalar(Color.RED)));
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -201,12 +201,12 @@ public class RemoteAuton extends LinearOpMode
         static final Scalar GREEN = new Scalar(0, 255, 0);
 
 
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(40,178);
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(40,98);
-        static final int REGION1_WIDTH = 209;
-        static final int REGION1_HEIGHT = 40;
-        static final int REGION2_WIDTH = 209;
-        static final int REGION2_HEIGHT = 120;
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(90,185);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(90,110);
+        static final int REGION1_WIDTH = 140;
+        static final int REGION1_HEIGHT = 35;
+        static final int REGION2_WIDTH = 140;
+        static final int REGION2_HEIGHT = 110;
 
 
         Point region1_pointA = new Point(
@@ -325,11 +325,11 @@ public class RemoteAuton extends LinearOpMode
             min = Math.min(avg1, avg2);
 
             //TODO: Set initial threshold for ring disqualification to previously established lower limit
-            if(min > 125) {
+            if(min > 100) {
                 config = CVTest.RingPipeline.RingConfig.ZERO;
                 Log.d(TAG, "0 Rings");
             }
-            else if(avg2 < 115) // Was it from region 2?
+            else if(avg2 < 90) // Was it from region 2?
             {
                 config = CVTest.RingPipeline.RingConfig.ONE; // Record our analysis
 
@@ -345,7 +345,7 @@ public class RemoteAuton extends LinearOpMode
                         -1); // Negative thickness means solid fill
                 Log.d(TAG, "4 Rings");
             }
-            else if(avg1 < 115) // Was it from region 1?
+            else if(avg1 < 90) // Was it from region 1?
             {
                 config = CVTest.RingPipeline.RingConfig.FOUR; // Record our analysis
 

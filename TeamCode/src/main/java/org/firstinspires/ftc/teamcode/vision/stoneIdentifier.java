@@ -19,8 +19,8 @@ import java.util.List;
 public class stoneIdentifier extends OpenCvPipeline {
     @Config
     public enum CV_THRESH {;
-        public static int lowBound = 95;
-        public static int highBound = 110;
+        public static int lowBound = 75;
+        public static int highBound = 100;
         public static int blur = 9;
         public static int threshold = 1;
         public static int sigX = 9;
@@ -57,7 +57,7 @@ public class stoneIdentifier extends OpenCvPipeline {
     public Mat processFrame(Mat input) {
         Core.rotate(input, rotated, Core.ROTATE_180);
 
-        Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+        Imgproc.cvtColor(rotated, YCrCb, Imgproc.COLOR_RGB2YCrCb);
 
         Core.extractChannel(YCrCb, Cb, 2);
 
