@@ -18,6 +18,7 @@ import java.util.Map;
 public class WobbleArm extends Subsystem {
     public static final String TAG = "WobbleArm";
     private DcMotorEx wobbleArm;
+    private int targetPosition = 0;
 
     public WobbleArm() {
 
@@ -27,35 +28,28 @@ public class WobbleArm extends Subsystem {
     public Map<String, Object> update() {
         Map<String, Object> updates = new HashMap<>();
         updates.put("Position", wobbleArm.getCurrentPosition());
-        updates.put("TargetPosition", 112);
+        updates.put("TargetPosition", targetPosition);
         return updates;
     }
 
     public void init(HardwareMap hwMap) {
         wobbleArm = hwMap.get(DcMotorEx.class, "wobbleArm");
         wobbleArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        wobbleArm.setTargetPositionTolerance(10);
+        wobbleArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        wobbleArm.setTargetPositionTolerance(5);
     }
 
     public void wobbleUp() {
-        wobbleArm.setTargetPosition(90);
+        wobbleArm.setTargetPosition(-120);
+        targetPosition = -120;
         wobbleArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         wobbleArm.setPower(-0.5);
-        while(wobbleArm.isBusy()) {
-
-        }
-        wobbleArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        wobbleArm.setPower(0);
     }
 
     public void wobbleDown() {
-        wobbleArm.setTargetPosition(222);
+        targetPosition = 0;
+        wobbleArm.setTargetPosition(0);
         wobbleArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         wobbleArm.setPower(0.5);
-        while(wobbleArm.isBusy()) {
-
-        }
-        wobbleArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        wobbleArm.setPower(0);
     }
 }

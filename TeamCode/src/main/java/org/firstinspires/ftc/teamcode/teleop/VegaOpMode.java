@@ -53,10 +53,10 @@ public class VegaOpMode extends OpMode
 
         runtime.reset();
 
-        //robot.drive.setMotorPowers(controllers.getDrivePowers());
+        robot.drive.setMotorPowers(controllers.getDrivePowers());
 
         if(gamepad1.a) {
-            robot.rotateByAngle(90);
+            robot.forwardByDistance(4);
         }
 
         if(gamepad1.x) {
@@ -70,9 +70,8 @@ public class VegaOpMode extends OpMode
         if(gamepad1.b) {
             if(bPressed != true) {
                 spinning = !spinning;
-            } else {
-                bPressed = true;
             }
+            bPressed = true;
         } else {
             bPressed = false;
         }

@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.hardware;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.stormbots.MiniPID;
+import com.sun.source.doctree.StartElementTree;
 
 import org.firstinspires.ftc.teamcode.subsystems.IMU;
 import org.firstinspires.ftc.teamcode.subsystems.Launcher;
@@ -16,12 +18,15 @@ import org.firstinspires.ftc.teamcode.subsystems.WobbleArm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.os.SystemClock.sleep;
 import static org.firstinspires.ftc.teamcode.hardware.BotConstants.IMU_CONSTANTS.ROT_MAX;
 import static org.firstinspires.ftc.teamcode.hardware.BotConstants.IMU_CONSTANTS.ROT_MIN;
 import static org.firstinspires.ftc.teamcode.hardware.BotConstants.IMU_CONSTANTS.ROT_PID;
+import static org.firstinspires.ftc.teamcode.hardware.BotConstants.IMU_CONSTANTS.STRAFE_PID;
+import static org.firstinspires.ftc.teamcode.hardware.BotConstants.IMU_CONSTANTS.STRAIGHT_PID;
 
 /*
 Todo: implement color sensor methods
@@ -30,8 +35,9 @@ Todo: Run all systems as state machines, with update commands as transition stat
 Todo: pass the dashboard object reference to robot, and then retrieve the various subsystem updates
  */
 
-public class Robot extends Subsystem{
+public class Robot extends Subsystem {
     public static final String TAG = "Robot";
+
     ElapsedTime runtime = new ElapsedTime();
 
     ArrayList<Subsystem> subsystems = new ArrayList<>();
@@ -40,11 +46,12 @@ public class Robot extends Subsystem{
     private WobbleArm wobble = new WobbleArm();
     public MecanumDrive drive = new MecanumDrive();
 
-
     FtcDashboard dashboard;
-    TelemetryPacket packet;
 
     private double speed = 1;
+
+    private double reference = 0;
+    private double currentX = 0;
 
     /* Constructor */
     public Robot() {
@@ -52,7 +59,6 @@ public class Robot extends Subsystem{
         subsystems.add(imu);
         subsystems.add(launcher);
         subsystems.add(wobble);
-        packet = new TelemetryPacket();
         dashboard = FtcDashboard.getInstance();
     }
 
@@ -67,6 +73,8 @@ public class Robot extends Subsystem{
 
         //might wanna add to telemetry in the opmode as well
         updates.put("launchSpeed", speed);
+        updates.put("Reference", reference);
+        updates.put("Distance", currentX);
 
         return updates;
     }
@@ -80,16 +88,62 @@ public class Robot extends Subsystem{
     }
 
     //region Auton methods
-    public void forward(double power) {
-        Log.d(TAG, String.format("Moving " + (power > 0 ? "forward" : "backward") + " at power %f.2", Math.abs(power)));
-        double[] powers = {power, power, power, power};
-        drive.setMotorPowers(powers);
+    public void forwardByDistance(double distance) {
+        ElapsedTime runtime = new ElapsedTime();
+        runtime.startTime();
+        reference = distance;
+
+        MiniPID drivePID = new MiniPID(STRAIGHT_PID.p, STRAIGHT_PID.i, STRAIGHT_PID.d);
+        double power;
+
+        List<Double> wheelPositions = drive.getWheelPositions();
+        double x = wheelPositions.get(0);
+        distance += x;
+
+        while(Math.abs(distance - x) > 0.2) {
+            currentX = x;
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.putAll(update());
+            dashboard.sendTelemetryPacket(packet);
+
+            wheelPositions = drive.getWheelPositions();
+            x = wheelPositions.get(0);
+            power = drivePID.getOutput(x, distance);
+
+            if(Math.abs(power) < 0.12) {
+                power *= 0.12/Math.abs(power);
+            }
+
+            double[] powers = {-power, -power, -power, -power};
+            drive.setMotorPowers(powers);
+        }
+        stop();
+        Log.d(TAG, "Time to Complete Forward Movement: " + runtime.milliseconds());
     }
 
-    public void strafe(double power) {
-        Log.d(TAG, String.format("Strafing " + (power > 0 ? "right" : "left") + " at power %f.2", Math.abs(power)));
-        double[] powers = {power, -power, power, -power};
-        drive.setMotorPowers(powers);
+    public void strafebyDistance(double distance) {
+        ElapsedTime runtime = new ElapsedTime();
+        runtime.startTime();
+        reference = distance;
+
+        MiniPID drivePID = new MiniPID(STRAFE_PID.p, STRAFE_PID.i, STRAFE_PID.d);
+        double power;
+
+        List<Double> wheelPositions = drive.getWheelPositions();
+        double y = wheelPositions.get(2);
+        distance += y;
+
+        while(Math.abs(distance - y) > 0.2) {
+            update();
+            wheelPositions = drive.getWheelPositions();
+            y = wheelPositions.get(2);
+            power = drivePID.getOutput(y, distance);
+
+            double[] powers = {power, -power, power, -power};
+            drive.setMotorPowers(powers);
+        }
+        stop();
+        Log.d(TAG, "Time to Complete strafe: " + runtime.milliseconds());
     }
 
     public void rotateByPower(double power) {
@@ -102,6 +156,9 @@ public class Robot extends Subsystem{
     public void rotateByAngle(double degrees) {
         ElapsedTime runtime = new ElapsedTime();
         runtime.startTime();
+
+        reference = degrees;
+
         MiniPID imuPID = new MiniPID(ROT_PID.p, ROT_PID.i, ROT_PID.d);
         double leftPower, rightPower, temppower;
 
@@ -112,11 +169,10 @@ public class Robot extends Subsystem{
         double angle = imu.getAngularDistance();
 
         //rotates until the imu returns that the robot is within a margin of error
-        while(Math.abs(degrees - angle) > 0.1 || Math.abs(degrees - lastAngle) > 0.1) {
-            packet.put("Reference", degrees);
-            update();
+        while(Math.abs(degrees - angle) > 1 || Math.abs(degrees - lastAngle) > 1) {
             lastAngle = angle;
             angle = imu.getAngularDistance();
+            Log.d(TAG, "" + angle);
             temppower = imuPID.getOutput(angle, degrees);
 
             if(Math.abs(temppower) < ROT_MIN) {
@@ -129,8 +185,8 @@ public class Robot extends Subsystem{
                 temppower = Math.signum(degrees) * ROT_MIN;
             }
 
-            leftPower = -temppower;
-            rightPower = temppower;
+            leftPower = temppower;
+            rightPower = -temppower;
 
             double[] powers = {leftPower, leftPower, rightPower, rightPower};
             drive.setMotorPowers(powers);
@@ -140,7 +196,7 @@ public class Robot extends Subsystem{
     }
 
     public void stop() {
-        double[] powers = {0, 0, 0};
+        double[] powers = {0, 0, 0, 0};
         drive.setMotorPowers(powers);
     }
 

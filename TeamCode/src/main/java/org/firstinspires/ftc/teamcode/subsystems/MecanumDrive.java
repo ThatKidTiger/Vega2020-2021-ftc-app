@@ -2,6 +2,8 @@
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -9,7 +11,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.util.Encoder;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -21,6 +25,10 @@ Todo: Implement rotateToOrientation command
 
 //deprecated, use roadrunner mecanum class
 public class MecanumDrive extends Subsystem {
+	public static double TICKS_PER_REV = 8192;
+	public static double WHEEL_RADIUS = .689; // in
+	public static double GEAR_RATIO = 1;
+
 	private static final String TAG = "MecanumDrive";
 	/*
 	Motor Arrangement
@@ -76,6 +84,8 @@ public class MecanumDrive extends Subsystem {
 		leftEncoder = new Encoder(hwMap.get(DcMotorEx.class, "backLeft"));
 		rightEncoder = new Encoder(hwMap.get(DcMotorEx.class, "frontRight"));
 		frontEncoder = new Encoder(hwMap.get(DcMotorEx.class, "backRight"));
+
+		leftEncoder.setDirection(Encoder.Direction.REVERSE);
 		Log.d(TAG, "Initialization Complete");
 	}
 
@@ -88,6 +98,19 @@ public class MecanumDrive extends Subsystem {
 		updates.put("BL", powers[1]);
 		updates.put("BR", powers[2]);
 		updates.put("FR", powers[3]);
+	}
+
+	public static double encoderTicksToInches(double ticks) {
+		return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
+	}
+
+	@NonNull
+	public List<Double> getWheelPositions() {
+		return Arrays.asList(
+				encoderTicksToInches(leftEncoder.getCurrentPosition()),
+				encoderTicksToInches(rightEncoder.getCurrentPosition()),
+				encoderTicksToInches(frontEncoder.getCurrentPosition())
+		);
 	}
 
 	//return to this after understanding kinematic analysis
