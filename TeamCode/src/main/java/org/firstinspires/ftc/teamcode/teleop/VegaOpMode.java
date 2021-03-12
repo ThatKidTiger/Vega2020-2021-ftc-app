@@ -27,13 +27,12 @@ public class VegaOpMode extends OpMode
     private FtcDashboard dashboard = FtcDashboard.getInstance();
     private TelemetryPacket packet = new TelemetryPacket();
 
-    private DistanceSensor dist;
-
     private boolean bPressed = false;
     private boolean spinning = false;
 
     private boolean ddownPressed = false;
     private boolean dupPressed = false;
+
     @Override
     public void init() {
         runtime.startTime();
@@ -60,6 +59,14 @@ public class VegaOpMode extends OpMode
             robot.rotateByAngle(90);
         }
 
+        if(gamepad1.x) {
+            robot.wobbleUp();
+        }
+
+        if(gamepad1.y) {
+            robot.wobbleDown();
+        }
+
         if(gamepad1.b) {
             if(bPressed != true) {
                 spinning = !spinning;
@@ -74,13 +81,6 @@ public class VegaOpMode extends OpMode
             robot.spinUp();
         } else {
             robot.spinDown();
-        }
-
-        //make spin up toggle and rising edge for speed adjustment
-        if(gamepad1.dpad_down) {
-            robot.decreaseLaunchSpeed();
-        } else if(gamepad1.dpad_up) {
-            robot.increaseLaunchSpeed();
         }
 
         if(gamepad1.dpad_down) {

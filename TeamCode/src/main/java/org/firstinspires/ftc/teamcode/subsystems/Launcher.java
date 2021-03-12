@@ -34,9 +34,9 @@ public class Launcher extends Subsystem {
 
     public void init(HardwareMap hwMap) {
         launcher = hwMap.get(DcMotorEx.class, "launcher");
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launcher.setVelocityPIDFCoefficients(LAUNCH_CONSTANTS.P, LAUNCH_CONSTANTS.I, LAUNCH_CONSTANTS.D, LAUNCH_CONSTANTS.F);
-        launcher.setPositionPIDFCoefficients(5.0);
+        //launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //launcher.setVelocityPIDFCoefficients(LAUNCH_CONSTANTS.P, LAUNCH_CONSTANTS.I, LAUNCH_CONSTANTS.D, LAUNCH_CONSTANTS.F);
+        //launcher.setPositionPIDFCoefficients(5.0);
     }
 
     public void spinToVel(double velocity) {

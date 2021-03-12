@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.IMU;
 import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
+import org.firstinspires.ftc.teamcode.subsystems.WobbleArm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +37,9 @@ public class Robot extends Subsystem{
     ArrayList<Subsystem> subsystems = new ArrayList<>();
     private IMU imu = new IMU();
     private Launcher launcher = new Launcher();
+    private WobbleArm wobble = new WobbleArm();
     public MecanumDrive drive = new MecanumDrive();
+
 
     FtcDashboard dashboard;
     TelemetryPacket packet;
@@ -48,6 +51,7 @@ public class Robot extends Subsystem{
         subsystems.add(drive);
         subsystems.add(imu);
         subsystems.add(launcher);
+        subsystems.add(wobble);
         packet = new TelemetryPacket();
         dashboard = FtcDashboard.getInstance();
     }
@@ -154,6 +158,14 @@ public class Robot extends Subsystem{
 
     public void spinDown() {
         launcher.spinToVel(0);
+    }
+
+    public void wobbleUp() {
+        wobble.wobbleUp();
+    }
+
+    public void wobbleDown() {
+        wobble.wobbleDown();
     }
 
     //endregion
