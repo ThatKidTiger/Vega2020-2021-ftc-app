@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.Encoder;
 
@@ -30,7 +31,13 @@ public class MecanumDrive extends Subsystem {
 	public static double GEAR_RATIO = 1;
 
 	private static final String TAG = "MecanumDrive";
-	/*
+
+	private ElapsedTime timer = new ElapsedTime();
+
+	private double lastTime = 0;
+
+	private double[] lastPositions = new double[] {0,0,0};
+ 	/*
 	Motor Arrangement
 			Front
 			  ^
@@ -86,6 +93,7 @@ public class MecanumDrive extends Subsystem {
 		frontEncoder = new Encoder(hwMap.get(DcMotorEx.class, "backRight"));
 
 		leftEncoder.setDirection(Encoder.Direction.REVERSE);
+		timer.startTime();
 		Log.d(TAG, "Initialization Complete");
 	}
 
@@ -106,10 +114,24 @@ public class MecanumDrive extends Subsystem {
 
 	@NonNull
 	public List<Double> getWheelPositions() {
+		lastPositions[0] = encoderTicksToInches(leftEncoder.getCurrentPosition());
+		lastPositions[1] = encoderTicksToInches(leftEncoder.getCurrentPosition());
+		lastPositions[2] = encoderTicksToInches(leftEncoder.getCurrentPosition());
 		return Arrays.asList(
-				encoderTicksToInches(leftEncoder.getCurrentPosition()),
-				encoderTicksToInches(rightEncoder.getCurrentPosition()),
-				encoderTicksToInches(frontEncoder.getCurrentPosition())
+			lastPositions[0],
+			lastPositions[1],
+			lastPositions[2]
+		);
+	}
+
+	public List<Double> getWheelVelocities() {
+		double time = timer.milliseconds();
+		double[] previous = lastPositions.clone();
+		getWheelPositions();
+		return Arrays.asList(
+			lastPositions[0] - previous[0] / ((time - lastTime) / 1000),
+			lastPositions[1] - previous[1] / ((time - lastTime) / 1000),
+			lastPositions[2] - previous[2] / ((time - lastTime) / 1000)
 		);
 	}
 

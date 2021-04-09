@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -18,6 +19,11 @@ import java.util.Map;
 @TeleOp(name="VegaOpMode", group="VegaBot")
 public class VegaOpMode extends OpMode
 {
+    @Config
+    public enum TEST_DISTANCE {;
+        public static int inches = 4;
+    }
+
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -32,6 +38,9 @@ public class VegaOpMode extends OpMode
 
     private boolean ddownPressed = false;
     private boolean dupPressed = false;
+
+    private boolean yPressed = false;
+    private boolean servoExtended = true;
 
     @Override
     public void init() {
@@ -55,16 +64,29 @@ public class VegaOpMode extends OpMode
 
         robot.drive.setMotorPowers(controllers.getDrivePowers());
 
-        if(gamepad1.a) {
-            robot.forwardByDistance(4);
+        if(gamepad1.x) {
+            robot.forwardByDistance(TEST_DISTANCE.inches);
         }
 
-        if(gamepad1.x) {
-            robot.wobbleUp();
+        if(gamepad1.a) {
+            robot.intake.spinToVel(1);
+        } else {
+            robot.intake.spinToVel(0);
         }
 
         if(gamepad1.y) {
-            robot.wobbleDown();
+            if(yPressed != true) {
+                servoExtended = !servoExtended;
+            }
+            yPressed = true;
+        } else {
+            yPressed = false;
+        }
+
+        if(servoExtended) {
+            robot.launcher.shoot();
+        } else {
+            robot.launcher.resetFlicker();
         }
 
         if(gamepad1.b) {

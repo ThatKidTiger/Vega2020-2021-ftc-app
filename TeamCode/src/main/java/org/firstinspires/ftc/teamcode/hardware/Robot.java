@@ -11,6 +11,7 @@ import com.stormbots.MiniPID;
 import com.sun.source.doctree.StartElementTree;
 
 import org.firstinspires.ftc.teamcode.subsystems.IMU;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Subsystem;
@@ -42,9 +43,9 @@ public class Robot extends Subsystem {
 
     ArrayList<Subsystem> subsystems = new ArrayList<>();
     private IMU imu = new IMU();
-    private Launcher launcher = new Launcher();
-    private WobbleArm wobble = new WobbleArm();
+    public Launcher launcher = new Launcher();
     public MecanumDrive drive = new MecanumDrive();
+    public Intake intake = new Intake();
 
     FtcDashboard dashboard;
 
@@ -58,7 +59,6 @@ public class Robot extends Subsystem {
         subsystems.add(drive);
         subsystems.add(imu);
         subsystems.add(launcher);
-        subsystems.add(wobble);
         dashboard = FtcDashboard.getInstance();
     }
 
@@ -91,14 +91,15 @@ public class Robot extends Subsystem {
     public void forwardByDistance(double distance) {
         ElapsedTime runtime = new ElapsedTime();
         runtime.startTime();
-        reference = distance;
 
         MiniPID drivePID = new MiniPID(STRAIGHT_PID.p, STRAIGHT_PID.i, STRAIGHT_PID.d);
         double power;
 
         List<Double> wheelPositions = drive.getWheelPositions();
-        double x = wheelPositions.get(0);
-        distance += x;
+        double x = (wheelPositions.get(0) + wheelPositions.get(1)) / 2;
+        double initialX = x;
+
+        reference = distance;
 
         while(Math.abs(distance - x) > 0.2) {
             currentX = x;
@@ -107,8 +108,8 @@ public class Robot extends Subsystem {
             dashboard.sendTelemetryPacket(packet);
 
             wheelPositions = drive.getWheelPositions();
-            x = wheelPositions.get(0);
-            power = drivePID.getOutput(x, distance);
+            x = (wheelPositions.get(0) + wheelPositions.get(1)) / 2;
+            power = drivePID.getOutput(x - initialX, distance - initialX);
 
             if(Math.abs(power) < 0.12) {
                 power *= 0.12/Math.abs(power);
@@ -126,18 +127,21 @@ public class Robot extends Subsystem {
         runtime.startTime();
         reference = distance;
 
-        MiniPID drivePID = new MiniPID(STRAFE_PID.p, STRAFE_PID.i, STRAFE_PID.d);
+        MiniPID strafePID = new MiniPID(STRAFE_PID.p, STRAFE_PID.i, STRAFE_PID.d);
         double power;
 
         List<Double> wheelPositions = drive.getWheelPositions();
         double y = wheelPositions.get(2);
+        double initialY = y;
+
         distance += y;
 
         while(Math.abs(distance - y) > 0.2) {
             update();
             wheelPositions = drive.getWheelPositions();
             y = wheelPositions.get(2);
-            power = drivePID.getOutput(y, distance);
+
+            power = strafePID.getOutput(y - initialY, distance - initialY);
 
             double[] powers = {power, -power, power, -power};
             drive.setMotorPowers(powers);
@@ -214,14 +218,6 @@ public class Robot extends Subsystem {
 
     public void spinDown() {
         launcher.spinToVel(0);
-    }
-
-    public void wobbleUp() {
-        wobble.wobbleUp();
-    }
-
-    public void wobbleDown() {
-        wobble.wobbleDown();
     }
 
     //endregion

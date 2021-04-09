@@ -16,7 +16,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class stoneIdentifier extends OpenCvPipeline {
+public class CbGradient extends OpenCvPipeline {
     @Config
     public enum CV_THRESH {;
         public static int lowBound = 75;
@@ -36,9 +36,10 @@ public class stoneIdentifier extends OpenCvPipeline {
     Mat close = new Mat();
     Mat cannyOutput = new Mat();
     Mat hierarchy = new Mat();
+    Mat gradient = new Mat();
     //Mat drawing = new Mat();
 
-    public stoneIdentifier(Scalar color) {
+    public CbGradient(Scalar color) {
         this.color = color;
     }
 
@@ -55,29 +56,39 @@ public class stoneIdentifier extends OpenCvPipeline {
 
     @Override
     public Mat processFrame(Mat input) {
-        Core.rotate(input, rotated, Core.ROTATE_180);
+        //Core.rotate(input, rotated, Core.ROTATE_180);
 
-        Imgproc.cvtColor(rotated, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+        Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
 
         Core.extractChannel(YCrCb, Cb, 2);
 
-        Imgproc.GaussianBlur(Cb, average, new Size(CV_THRESH.blur , CV_THRESH.blur), CV_THRESH.sigX);
+        //Imgproc.GaussianBlur(Cb, average, new Size(blur , blur), sigX);
 
-        Core.inRange(average, new Scalar(CV_THRESH.lowBound),new Scalar(CV_THRESH.highBound), thresh);
+        Core.inRange(Cb, new Scalar(CV_THRESH.lowBound),new Scalar(CV_THRESH.highBound), thresh);
 
-        Imgproc.morphologyEx(thresh, close, Imgproc.MORPH_CLOSE, kernel);
+        Core.bitwise_not(thresh, thresh);
+
+        //gradient.setTo(new Scalar(0), thresh);
+
+        Imgproc.applyColorMap(Cb, gradient, Imgproc.COLORMAP_JET);
+
+        //gradient.setTo(new Scalar(0), thresh);
+
+        return gradient;
+
+        /*Imgproc.morphologyEx(thresh, close, Imgproc.MORPH_CLOSE, kernel);
 
         Imgproc.Canny(close, cannyOutput, CV_THRESH.threshold, CV_THRESH.threshold * 3);
 
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(cannyOutput, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(cannyOutput, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);*/
 
         /*Map<MatOfPoint, Double> contourmap = new HashMap<MatOfPoint, Double>();
         for(int i = 0; i < contours.size(); i++) {
             contourmap.put(contours.get(i), Imgproc.contourArea(contours.get(i)));
         }*/
 
-        double maxVal = 0;
+        /*double maxVal = 0;
         int maxValIdx = 0;
 
         //drawing = Mat.zeros(cannyOutput.size(), CvType.CV_8UC3);
@@ -96,6 +107,6 @@ public class stoneIdentifier extends OpenCvPipeline {
             Imgproc.rectangle(rotated, bounds, color, 2);
         }
 
-        return rotated;
+        return rotated;*/
     }
 }
