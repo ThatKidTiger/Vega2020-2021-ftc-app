@@ -4,10 +4,13 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.Encoder;
@@ -18,19 +21,17 @@ import java.util.List;
 import java.util.Map;
 
 /*
-Todo: Document
 Todo: Read mecanum kinematic analysis
-Todo: Find out why the motor powers need to be reversed
+Todo: Set conventional wheel directions and figure out proper power negation
 Todo: Implement rotateToOrientation command
 */
 
-//deprecated, use roadrunner mecanum class
 public class MecanumDrive extends Subsystem {
+	private static final String TAG = "MecanumDrive";
+
 	public static double TICKS_PER_REV = 8192;
 	public static double WHEEL_RADIUS = .689; // in
 	public static double GEAR_RATIO = 1;
-
-	private static final String TAG = "MecanumDrive";
 
 	private ElapsedTime timer = new ElapsedTime();
 
@@ -68,9 +69,9 @@ public class MecanumDrive extends Subsystem {
 			updates.put(motorNames[i], motors[i].getVelocity());
 		}
 
-		updates.put("leftEncoder", leftEncoder.getCurrentPosition());
-		updates.put("rightEncoder", rightEncoder.getCurrentPosition());
-		updates.put("frontEncoder", frontEncoder.getCurrentPosition());
+		updates.put("leftEncoder", encoderTicksToInches(leftEncoder.getCurrentPosition()));
+		updates.put("rightEncoder", encoderTicksToInches(rightEncoder.getCurrentPosition()));
+		updates.put("frontEncoder", encoderTicksToInches(frontEncoder.getCurrentPosition()));
 
 		return updates;
 	}
@@ -80,9 +81,16 @@ public class MecanumDrive extends Subsystem {
 	}
 
 	@Override
-	public void init(HardwareMap hwMap) {
+	public void init(HardwareMap hwMap, FtcDashboard dash) {
+		this.dash = dash;
+
 		for(int i = 0; i < 4; i++) {
 			motors[i] = hwMap.get(DcMotorEx.class, motorNames[i]);
+		}
+
+		for(DcMotorEx motor : motors) {
+			motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+			motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 		}
 
 		motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
@@ -92,8 +100,10 @@ public class MecanumDrive extends Subsystem {
 		rightEncoder = new Encoder(hwMap.get(DcMotorEx.class, "frontRight"));
 		frontEncoder = new Encoder(hwMap.get(DcMotorEx.class, "backRight"));
 
-		leftEncoder.setDirection(Encoder.Direction.REVERSE);
+		rightEncoder.setDirection(Encoder.Direction.REVERSE);
+
 		timer.startTime();
+
 		Log.d(TAG, "Initialization Complete");
 	}
 
@@ -134,17 +144,4 @@ public class MecanumDrive extends Subsystem {
 			lastPositions[2] - previous[2] / ((time - lastTime) / 1000)
 		);
 	}
-
-	//return to this after understanding kinematic analysis
-	/*converting unit circle gamepad input into polar coordinates to power + direction
-	r = (sqrt(arccos(x)^2 + arcsin(y)^2), theta = arcsin(y)
-	public void drivewithGamepad(double x, double y) {
-		double r = sqrt(pow(acos(x), 2) + pow(asin(y),2 ));
-		double theta = asin(y);
-	}
-
-	public void drivewithVelocity() {
-
-	}
-	*/
 }

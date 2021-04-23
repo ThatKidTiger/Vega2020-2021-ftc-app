@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -33,7 +34,9 @@ public class HDrive extends Subsystem{
 	}
 
 	//initialization, retrieves necessary hardware references and sets initial values
-	public void init(HardwareMap hwMap) {
+	public void init(HardwareMap hwMap, FtcDashboard dash) {
+		this.dash = dash;
+
 		right = hwMap.get(DcMotor.class, "right"); //<- the names that we are searching for
 		left = hwMap.get(DcMotor.class, "left");
 		strafe = hwMap.get(DcMotor.class, "strafe");

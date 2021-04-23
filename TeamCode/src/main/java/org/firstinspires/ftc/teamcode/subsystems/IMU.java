@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class IMU extends Subsystem {
 	private static final String TAG = "MecanumDriveAuto";
-	private BNO055IMU imu;
+	public BNO055IMU imu;
 
 	private String imuName = "imu";
 	private Orientation lastAngles;
@@ -35,7 +36,9 @@ public class IMU extends Subsystem {
 
 	}
 
-	public void init(HardwareMap hwMap) {
+	public void init(HardwareMap hwMap, FtcDashboard dash) {
+		this.dash = dash;
+
 		imu = hwMap.get(BNO055IMU.class, imuName);
 
 		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();

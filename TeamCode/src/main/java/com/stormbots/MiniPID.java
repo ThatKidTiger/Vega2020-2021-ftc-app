@@ -1,5 +1,8 @@
 package com.stormbots;
 
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
 /**
  * Small, easy to use PID implementation with advanced controller capability.<br>
  * Minimal usage:<br>
@@ -60,6 +63,13 @@ public class MiniPID {
         checkSigns();
     }
 
+    public MiniPID(PIDCoefficients pid) {
+        P = pid.p;
+        I = pid.i;
+        D = pid.d;
+        checkSigns();
+    }
+
     /**
      * Create a MiniPID class object.
      * See setP, setI, setD, setF methods for more detailed parameters.
@@ -74,6 +84,14 @@ public class MiniPID {
         I = i;
         D = d;
         F = f;
+        checkSigns();
+    }
+
+    public MiniPID(PIDFCoefficients pidf) {
+        P = pidf.p;
+        I = pidf.i;
+        D = pidf.d;
+        F = pidf.f;
         checkSigns();
     }
 

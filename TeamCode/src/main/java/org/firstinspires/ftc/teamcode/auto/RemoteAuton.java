@@ -57,7 +57,7 @@ public class RemoteAuton extends LinearOpMode
     @Override
     public void runOpMode()
     {
-        robot.init(hardwareMap);
+        robot.init(hardwareMap, dash);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -116,13 +116,14 @@ public class RemoteAuton extends LinearOpMode
         /*
          * Wait for the user to press start on the Driver Station
          */
-        RingPipeline.RingConfig config = pipeline.getAnalysis();
-        webcam.closeCameraDevice();
+        //RingPipeline.RingConfig config = pipeline.getAnalysis();
 
         waitForStart();
 
+        webcam.closeCameraDevice();
+
         robot.strafebyDistance(30);
-        robot.launcher.spinToVel(1);
+        robot.launcher.spinUp();
         robot.forwardByDistance(20);
 
         robot.launcher.shoot();

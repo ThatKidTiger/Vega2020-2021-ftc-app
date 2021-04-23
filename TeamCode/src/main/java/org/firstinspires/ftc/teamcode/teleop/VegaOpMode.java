@@ -5,12 +5,11 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.GamepadController;
 
@@ -21,7 +20,7 @@ public class VegaOpMode extends OpMode
 {
     @Config
     public enum TEST_DISTANCE {;
-        public static int inches = 4;
+        public static int inches = 12;
     }
 
     // Declare OpMode members.
@@ -36,16 +35,19 @@ public class VegaOpMode extends OpMode
     private boolean bPressed = false;
     private boolean spinning = false;
 
-    private boolean ddownPressed = false;
-    private boolean dupPressed = false;
+    private boolean leftBumperPressed = false;
+    private boolean rightBumperPressed = false;
 
     private boolean yPressed = false;
-    private boolean servoExtended = true;
+    private boolean servoExtended = false;
+
+    private boolean xPressed = false;
+    private boolean wobbleClosed = false;
 
     @Override
     public void init() {
         runtime.startTime();
-        robot.init(hardwareMap);
+        robot.init(hardwareMap, dashboard);
 
         controllers = new GamepadController(gamepad1, gamepad2);
     }
@@ -68,8 +70,12 @@ public class VegaOpMode extends OpMode
             robot.forwardByDistance(TEST_DISTANCE.inches);
         }
 
+        /*if(gamepad1.x) {
+            robot.strafebyDistance(7.5);
+        }*/
+
         if(gamepad1.a) {
-            robot.intake.spinToVel(1);
+            robot.intake.spinToVel(-1);
         } else {
             robot.intake.spinToVel(0);
         }
@@ -89,9 +95,26 @@ public class VegaOpMode extends OpMode
             robot.launcher.resetFlicker();
         }
 
+        if(gamepad1.x) {
+            if(xPressed != true) {
+                wobbleClosed = !wobbleClosed;
+            }
+            xPressed = true;
+        } else {
+            xPressed = false;
+        }
+
+        if(wobbleClosed) {
+            robot.wobble.wobbleClose();
+        } else {
+            robot.wobble.wobbleOpen();
+        }
+
         if(gamepad1.b) {
             if(bPressed != true) {
                 spinning = !spinning;
+                robot.launcher.resetFlicker();
+                servoExtended = false;
             }
             bPressed = true;
         } else {
@@ -99,27 +122,37 @@ public class VegaOpMode extends OpMode
         }
 
         if(spinning) {
-            robot.spinUp();
+            robot.launcher.spinUp();
         } else {
-            robot.spinDown();
+            robot.launcher.stopMotor();
         }
 
-        if(gamepad1.dpad_down) {
-            if(!ddownPressed) {
-                robot.decreaseLaunchSpeed();
+        if(gamepad1.left_bumper) {
+            if(!leftBumperPressed) {
+                //robot.decreaseLaunchSpeed();
+                robot.launcher.setPowerSpeed();
             }
-            ddownPressed = true;
+            leftBumperPressed = true;
         } else {
-            ddownPressed = false;
+            leftBumperPressed = false;
         }
 
-        if(gamepad1.dpad_up) {
-            if(!dupPressed) {
-                robot.increaseLaunchSpeed();
+        if(gamepad1.right_bumper) {
+            if(!rightBumperPressed) {
+                //robot.increaseLaunchSpeed();
+                robot.launcher.setHighSpeed();
             }
-            dupPressed = true;
+            rightBumperPressed = true;
         } else {
-            dupPressed = false;
+            rightBumperPressed = false;
+        }
+
+        if(gamepad1.left_trigger > 0) {
+            robot.wobble.wobbleUp();
+        }
+
+        if(gamepad1.right_trigger > 0) {
+            robot.wobble.wobbleDown();
         }
 
         /*
@@ -127,6 +160,8 @@ public class VegaOpMode extends OpMode
          */
 
         updatePacket.put("Time: ", runtime.milliseconds());
+        telemetry.addData("Z: ", robot.imu.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
+        telemetry.update();
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
         packet.putAll(updatePacket);
