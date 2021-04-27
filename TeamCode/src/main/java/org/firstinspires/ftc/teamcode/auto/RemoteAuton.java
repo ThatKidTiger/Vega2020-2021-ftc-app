@@ -116,39 +116,54 @@ public class RemoteAuton extends LinearOpMode
         /*
          * Wait for the user to press start on the Driver Station
          */
-        //RingPipeline.RingConfig config = pipeline.getAnalysis();
+        RingPipeline.RingConfig config = pipeline.getAnalysis();
 
         waitForStart();
 
         webcam.closeCameraDevice();
 
-        robot.strafebyDistance(30);
+        robot.wobble.wobbleClose();
+        robot.wobble.wobbleArm.setPosition(0.7);
+
+        robot.launcher.setHighSpeed();
         robot.launcher.spinUp();
-        robot.forwardByDistance(20);
+        robot.forwardByDistance(52);
 
-        robot.launcher.shoot();
-        if(isStopRequested()) {
-            robot.launcher.resetFlicker();
+        while(!robot.launcher.atTargetVelocity() && !isStopRequested()) { }
+
+        fire();
+        while(!robot.launcher.atTargetVelocity() && !isStopRequested()) { }
+
+        fire();
+        while(!robot.launcher.atTargetVelocity() && !isStopRequested()) { }
+
+        fire();
+
+        if(config == RingPipeline.RingConfig.FOUR) {
+            robot.forwardByDistance(52);
+            robot.rotateByAngle(-90);
+            robot.forwardByDistance(12);
+            robot.wobble.wobbleDown();
+            robot.wobble.wobbleOpen();
+            robot.rotateByAngle(-90);
+            robot.forwardByDistance(40);
+
+        } else if(config == RingPipeline.RingConfig.ONE) {
+            robot.forwardByDistance(20);
+            robot.rotateByAngle(90);
+            robot.wobble.wobbleDown();
+            robot.wobble.wobbleOpen();
+            robot.rotateByAngle(90);
+            robot.forwardByDistance(12);
+        } else {
+            robot.forwardByDistance(12);
+            robot.rotateByAngle(-90);
+            robot.forwardByDistance(12);
+            robot.wobble.wobbleDown();
+            robot.wobble.wobbleOpen();
+            robot.rotateByAngle(-90);
+            robot.forwardByDistance(8);
         }
-        robot.launcher.resetFlicker();
-
-        robot.strafebyDistance(7.5);
-
-        robot.launcher.shoot();
-        if(isStopRequested()) {
-            robot.launcher.resetFlicker();
-        }
-        robot.launcher.resetFlicker();
-
-        robot.strafebyDistance(7.5);
-
-        robot.launcher.shoot();
-        if(isStopRequested()) {
-            robot.launcher.resetFlicker();
-        }
-        robot.launcher.resetFlicker();
-
-        robot.forwardByDistance(8);
 
         //robot.wobbleUp();
         //sleep(5000);
@@ -184,12 +199,12 @@ public class RemoteAuton extends LinearOpMode
         static final Scalar GREEN = new Scalar(0, 255, 0);
 
 
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(90,185);
-        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(90,110);
+        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(90,150);
+        static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(90,85);
         static final int REGION1_WIDTH = 140;
-        static final int REGION1_HEIGHT = 35;
+        static final int REGION1_HEIGHT = 30;
         static final int REGION2_WIDTH = 140;
-        static final int REGION2_HEIGHT = 110;
+        static final int REGION2_HEIGHT = 95;
 
 
         Point region1_pointA = new Point(
@@ -209,7 +224,6 @@ public class RemoteAuton extends LinearOpMode
         Mat region1_Cb, region2_Cb;
         Mat YCrCb = new Mat();
         Mat Cb = new Mat();
-        Mat rotated = new Mat();
         int avg1, avg2;
 
         private volatile int min = 0;
@@ -217,8 +231,7 @@ public class RemoteAuton extends LinearOpMode
 
         void inputToCb(Mat input)
         {
-            Core.rotate(input, rotated, Core.ROTATE_180);
-            Imgproc.cvtColor(rotated, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
             Core.extractChannel(YCrCb, Cb, 2);
         }
 
@@ -291,7 +304,7 @@ public class RemoteAuton extends LinearOpMode
             Log.d(TAG, "Avg 2:" + avg2);
 
             Imgproc.rectangle(
-                    rotated, // Buffer to draw on
+                    input, // Buffer to draw on
                     region1_pointA, // First point which defines the rectangle
                     region1_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
@@ -299,7 +312,7 @@ public class RemoteAuton extends LinearOpMode
 
 
             Imgproc.rectangle(
-                    rotated, // Buffer to draw on
+                    input, // Buffer to draw on
                     region2_pointA, // First point which defines the rectangle
                     region2_pointB, // Second point which defines the rectangle
                     BLUE, // The color the rectangle is drawn in
@@ -308,11 +321,11 @@ public class RemoteAuton extends LinearOpMode
             min = Math.min(avg1, avg2);
 
             //TODO: Set initial threshold for ring disqualification to previously established lower limit
-            if(min > 100) {
+            if(min > 120) {
                 config = RingConfig.ZERO;
                 Log.d(TAG, "0 Rings");
             }
-            else if(avg2 < 90) // Was it from region 2?
+            else if(avg2 < 110) // Was it from region 2?
             {
                 config = RingConfig.ONE; // Record our analysis
 
@@ -321,14 +334,14 @@ public class RemoteAuton extends LinearOpMode
                  * Simply a visual aid. Serves no functional purpose.
                  */
                 Imgproc.rectangle(
-                        rotated, // Buffer to draw on
+                        input, // Buffer to draw on
                         region2_pointA, // First point which defines the rectangle
                         region2_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
                         -1); // Negative thickness means solid fill
                 Log.d(TAG, "4 Rings");
             }
-            else if(avg1 < 90) // Was it from region 1?
+            else if(avg1 < 110) // Was it from region 1?
             {
                 config = RingConfig.FOUR; // Record our analysis
 
@@ -337,7 +350,7 @@ public class RemoteAuton extends LinearOpMode
                  * Simply a visual aid. Serves no functional purpose.
                  */
                 Imgproc.rectangle(
-                        rotated, // Buffer to draw on
+                        input, // Buffer to draw on
                         region1_pointA, // First point which defines the rectangle
                         region1_pointB, // Second point which defines the rectangle
                         GREEN, // The color the rectangle is drawn in
@@ -350,7 +363,7 @@ public class RemoteAuton extends LinearOpMode
              * simply rendering the raw camera feed, because we called functions
              * to add some annotations to this buffer earlier up.
              */
-            return rotated;
+            return input;
         }
 
         /*
@@ -364,5 +377,12 @@ public class RemoteAuton extends LinearOpMode
         public int getMin() {
             return min;
         }
+    }
+
+    public void fire() {
+        robot.launcher.shoot();
+        sleep(1500);
+        robot.launcher.resetFlicker();
+        sleep(1500);
     }
 }

@@ -23,8 +23,8 @@ public class Launcher extends Subsystem {
 
     private PIDFCoefficients coefficients = new PIDFCoefficients(LAUNCH_CONSTANTS.P, LAUNCH_CONSTANTS.I, LAUNCH_CONSTANTS.D, 0);
 
-    private double highSpeed = 1450;
-    private double powerSpeed = 1400;
+    private double highSpeed = -1340;
+    private double powerSpeed = -1240;
 
     private double velocity = powerSpeed;
 
@@ -34,6 +34,9 @@ public class Launcher extends Subsystem {
 
     @Override
     public Map<String, Object> update() {
+        launcher.setVelocityPIDFCoefficients(LAUNCH_CONSTANTS.P, LAUNCH_CONSTANTS.I, LAUNCH_CONSTANTS.D, LAUNCH_CONSTANTS.F);
+        launcher.setPositionPIDFCoefficients(LAUNCH_CONSTANTS.PP);
+
         Map<String, Object> updates = new HashMap<>();
 
         updates.put("Launcher Vel", launcher.getVelocity());
@@ -48,7 +51,7 @@ public class Launcher extends Subsystem {
 
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setVelocityPIDFCoefficients(LAUNCH_CONSTANTS.P, LAUNCH_CONSTANTS.I, LAUNCH_CONSTANTS.D, LAUNCH_CONSTANTS.F);
-        launcher.setPositionPIDFCoefficients(5.0);
+        launcher.setPositionPIDFCoefficients(LAUNCH_CONSTANTS.PP);
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         resetFlicker();
     }
@@ -66,23 +69,40 @@ public class Launcher extends Subsystem {
     }
 
     public void setHighSpeed() {
-        launcher.setVelocity(highSpeed);
+        velocity = highSpeed;
     }
 
     public void setPowerSpeed() {
-        launcher.setVelocity(powerSpeed);
+        velocity = powerSpeed;
     }
 
     public void stopMotor() {
         launcher.setVelocity(0);
     }
 
+    public void setVelocity(double velocity) {
+        this.velocity = velocity;
+    }
+
+    public double getVelocity() {
+        return launcher.getVelocity();
+    }
+
+    public double getTargetVelocity() {
+        return velocity;
+    }
+
+    public boolean atTargetVelocity() {
+        return Math.abs(velocity - launcher.getVelocity()) < 10;
+    }
+
     @Config
     public enum LAUNCH_CONSTANTS {;
-        public static double P = 1.26;
-        public static double I = .126;
+        public static double P = 1;
+        public static double I = .3;
         public static double D = 0;
-        public static double F = 12.6;
+        public static double F = 13.65;
+        public static double PP = 5;
     }
 }
 

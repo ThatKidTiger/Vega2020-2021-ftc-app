@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -15,12 +17,17 @@ import org.firstinspires.ftc.teamcode.subsystems.GamepadController;
 
 import java.util.Map;
 
+import static java.lang.Thread.sleep;
+
 @TeleOp(name="VegaOpMode", group="VegaBot")
 public class VegaOpMode extends OpMode
 {
     @Config
     public enum TEST_DISTANCE {;
-        public static int inches = 12;
+        public static double straight = 23;
+        public static double strafe = 7.5;
+        public static double degrees = 5;
+        public static int config = 0;
     }
 
     // Declare OpMode members.
@@ -55,6 +62,7 @@ public class VegaOpMode extends OpMode
     @Override
     public void start() {
         runtime.reset();
+        robot.wobble.wobbleDown();
     }
 
     //Todo: figure out how to consolidate telemetry packets for dashboard updates per-loop, probably by returning a mega packet from the robot class.
@@ -62,17 +70,21 @@ public class VegaOpMode extends OpMode
     public void loop() {
         Map<String, Object> updatePacket = robot.update();
 
-        runtime.reset();
-
         robot.drive.setMotorPowers(controllers.getDrivePowers());
 
-        if(gamepad1.x) {
-            robot.forwardByDistance(TEST_DISTANCE.inches);
+        if(TEST_DISTANCE.config == 1) {
+            if (gamepad1.x) {
+                robot.forwardByDistance(TEST_DISTANCE.straight);
+            }
+        } else if(TEST_DISTANCE.config == 2) {
+            if (gamepad1.x) {
+                robot.strafebyDistance(TEST_DISTANCE.strafe);
+            }
+        } else if(TEST_DISTANCE.config == 3) {
+            if(gamepad1.x) {
+                robot.rotateByAngle(TEST_DISTANCE.degrees);
+            }
         }
-
-        /*if(gamepad1.x) {
-            robot.strafebyDistance(7.5);
-        }*/
 
         if(gamepad1.a) {
             robot.intake.spinToVel(-1);
@@ -82,7 +94,18 @@ public class VegaOpMode extends OpMode
 
         if(gamepad1.y) {
             if(yPressed != true) {
-                servoExtended = !servoExtended;
+                if(spinning) {
+                    if (servoExtended) {
+                        servoExtended = false;
+                    } else {
+                        if (robot.launcher.atTargetVelocity()) {
+                            servoExtended = !servoExtended;
+                            runtime.reset();
+                        }
+                    }
+                } else {
+                    servoExtended = !servoExtended;
+                }
             }
             yPressed = true;
         } else {
@@ -95,13 +118,15 @@ public class VegaOpMode extends OpMode
             robot.launcher.resetFlicker();
         }
 
-        if(gamepad1.x) {
-            if(xPressed != true) {
-                wobbleClosed = !wobbleClosed;
+        if(TEST_DISTANCE.config == 0) {
+            if (gamepad1.x) {
+                if (xPressed != true) {
+                    wobbleClosed = !wobbleClosed;
+                }
+                xPressed = true;
+            } else {
+                xPressed = false;
             }
-            xPressed = true;
-        } else {
-            xPressed = false;
         }
 
         if(wobbleClosed) {
@@ -115,6 +140,7 @@ public class VegaOpMode extends OpMode
                 spinning = !spinning;
                 robot.launcher.resetFlicker();
                 servoExtended = false;
+                runtime.reset();
             }
             bPressed = true;
         } else {
@@ -166,9 +192,24 @@ public class VegaOpMode extends OpMode
         //packet.put("IMU_CONSTANTS Calib", robot.imu.getCalibrationStatus().toString());
         packet.putAll(updatePacket);
         dashboard.sendTelemetryPacket(packet);
+
+        if(robot.launcher.atTargetVelocity()) {
+            Log.d("Rampup Time", "" + runtime.milliseconds());
+        }
     }
 
     @Override
     public void stop() {
+        robot.wobble.wobbleUp();
+    }
+
+    public void fire() {
+        robot.launcher.shoot();
+        try {
+            sleep(750);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        robot.launcher.resetFlicker();
     }
 }

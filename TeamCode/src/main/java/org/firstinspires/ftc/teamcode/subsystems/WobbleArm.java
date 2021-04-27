@@ -31,12 +31,12 @@ public class WobbleArm extends Subsystem {
         wobbleGrabber = hwMap.get(Servo.class, "wobbleGrabber");
     }
 
-    public void wobbleUp() {
-        wobbleArm.setPosition(0);
+    public void wobbleDown() {
+        wobbleArm.setPosition(0.8);
     }
 
-    public void wobbleDown() {
-        wobbleArm.setPosition(0.5);
+    public void wobbleUp() {
+        wobbleArm.setPosition(0);
     }
 
     public void wobbleClose() {

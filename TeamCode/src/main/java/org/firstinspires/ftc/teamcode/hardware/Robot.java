@@ -71,6 +71,10 @@ public class Robot extends Subsystem {
         updates.put("Reference", reference);
         updates.put("CurrentX", currentX);
         updates.put("CurrentY", currentY);
+        updates.put("Travelled", 0);
+        updates.put("PID Power", 0);
+        updates.put("Profile", 0);
+        updates.put("FinalPower", 0);
 
         return updates;
     }
@@ -94,56 +98,69 @@ public class Robot extends Subsystem {
         double target;
         double profilePower;
 
+        double adjust = DRIVE_CONSTANTS.straightAdjust;
+
         MiniPID pid = new MiniPID(DRIVE_CONSTANTS.STRAIGHT_PID);
 
         List<Double> wheelPositions = drive.getWheelPositions();
         double x = (wheelPositions.get(0) + wheelPositions.get(1)) / 2;
+        double lastX = x;
 
         target = distance + x;
 
         reference = target;
 
-        while(Math.abs(target - x) > 0.05) {
-            currentX = x;
-
+        while(Math.abs(target - x) > 0.075 || Math.abs(target - lastX) > 0.1 && runtime.seconds() < 2.9) {
             TelemetryPacket packet = new TelemetryPacket();
             packet.putAll(update());
-            dash.sendTelemetryPacket(packet);
+            currentX = x;
+
+            lastX = x;
 
             wheelPositions = drive.getWheelPositions();
             x = (wheelPositions.get(0) + wheelPositions.get(1)) / 2;
 
             power = pid.getOutput(x, target);
+            packet.put("PID Power", power);
 
             Log.d("PID Output", "" + power);
 
             double travelled = x - target + distance;
+            packet.put("Travelled", travelled);
             Log.d("Travelled" , "" + travelled);
-            if(travelled <= 0.25 * distance) {
-                profilePower = Math.abs(power) * (travelled / (0.25 * distance));
+            if(Math.abs(travelled) <= 0.25 * Math.abs(distance)) {
+                profilePower = (travelled / (0.25 * distance));
                 Log.d("Phase", "Start");
-            } else if(travelled >= 0.75 * distance) {
-                profilePower = Math.abs(power) * ((distance - travelled) / (0.25 * distance));
+            } else if(Math.abs(travelled) >= 0.25 * Math.abs(distance)) {
+                profilePower = (Math.abs(distance - travelled) / (0.75 * distance));
                 Log.d("Phase", "End");
             } else {
                 profilePower = 1;
                 Log.d("Phase", "Middle");
             }
             Log.d("Profile" , "" + profilePower);
+            packet.put("Profile", profilePower);
 
             if(profilePower == 0) {
-                power *= 0.2 / Math.abs(power);
+                power *= 0.15/ Math.abs(power);
             } else if(Math.abs(power) > Math.abs(profilePower)) {
                 power *= Math.abs(profilePower)/Math.abs(power);
             }
 
-            if(Math.abs(power) < 0.2) {
-                power *= 0.2/Math.abs(power);
+            if(Math.abs(power) < 0.15) {
+                power *= 0.15/Math.abs(power);
             }
+
+            if(Math.abs(power * adjust) > 0.8) {
+                power *= 0.8/(Math.abs(power) * adjust);
+            }
+
+            packet.put("FinalPower", power);
+            dash.sendTelemetryPacket(packet);
 
             Log.d("Power", "" + -power);
             Log.d("Error", "" + (target-x));
-            double[] powers = {-power, -power, -power, -power};
+            double[] powers = {-power * adjust, -power * adjust, -power, -power};
             drive.setMotorPowers(powers);
         }
         stop();
@@ -154,7 +171,7 @@ public class Robot extends Subsystem {
         ElapsedTime runtime = new ElapsedTime();
         runtime.startTime();
 
-        double backAdjust = 1.1;
+        double backAdjust = DRIVE_CONSTANTS.strafeAdjust;
 
         double power;
         double target;
@@ -164,13 +181,16 @@ public class Robot extends Subsystem {
 
         List<Double> wheelPositions = drive.getWheelPositions();
         double y = wheelPositions.get(2);
+        double lastY = y;
 
         target = distance + y;
 
         reference = target;
 
-        while(Math.abs(distance - y) > 0.05) {
+        while(Math.abs(target - y) > 0.05 || Math.abs(target - lastY) > 0.1 && runtime.seconds() < 2.9) {
             currentY = y;
+
+            lastY = y;
 
             TelemetryPacket packet = new TelemetryPacket();
             packet.putAll(update());
@@ -182,15 +202,12 @@ public class Robot extends Subsystem {
             power = strafePID.getOutput(y, target);
 
             double travelled = y - target + distance;
-            if(travelled <= 0.25 * distance) {
-                profilePower = Math.abs(power) * (travelled / (0.25 * distance));
-                Log.d("Phase", "Start");
-            } else if(travelled >= 0.75 * distance) {
-                profilePower = Math.abs(power) * ((distance - travelled) / (0.25 * distance));
-                Log.d("Phase", "End");
+            if(Math.abs(travelled) <= 0.25 * Math.abs(distance)) {
+                profilePower = (Math.abs(travelled) / (0.25 * distance));
+            } else if(Math.abs(travelled) > 0.25 * Math.abs(distance)) {
+                profilePower = (Math.abs(distance - travelled) / (0.75 * distance));
             } else {
                 profilePower = 1;
-                Log.d("Phase", "Middle");
             }
 
             if(profilePower == 0) {
@@ -199,8 +216,12 @@ public class Robot extends Subsystem {
                 power *= Math.abs(profilePower)/Math.abs(power);
             }
 
-            if(Math.abs(power) < 0.2) {
-                power *= 0.2/Math.abs(power);
+            if(Math.abs(power) < 0.18) {
+                power *= 0.18/Math.abs(power);
+            }
+
+            if(Math.abs(power * backAdjust) > 0.8) {
+                power *= 0.8/(Math.abs(power) * backAdjust);
             }
 
             double[] powers = {power, -power * backAdjust, power * backAdjust, -power};
@@ -269,7 +290,9 @@ public class Robot extends Subsystem {
     @Config
     public enum DRIVE_CONSTANTS {;
         public static PIDCoefficients ROT_PID = new PIDCoefficients(0.0375, 0, 0.01);
-        public static PIDCoefficients STRAIGHT_PID = new PIDCoefficients(0.2, 0, 0);
-        public static PIDCoefficients STRAFE_PID = new PIDCoefficients(0.0375, 0, 0.01);
+        public static PIDCoefficients STRAIGHT_PID = new PIDCoefficients(0.2, 0, 0.15);
+        public static PIDCoefficients STRAFE_PID = new PIDCoefficients(0.15, 0, 0.1);
+        public static double straightAdjust = 1.04;
+        public static double strafeAdjust = 1.2;
     }
 }
